@@ -38,7 +38,17 @@ class Scaner:
         text = 'GO\n'
         self.ser.write(text.encode())
         self.clock.tick(self.fps)
+ 
+        self.x += self.d
         
+        if(self.x <= 0):
+            self.d = 1
+            self.polygon.clear()
+            print("Clear1")
+        if(self.x >= 180):
+            self.d = -1
+            self.polygon.clear()
+            print("Clear2")	
         try:
             line = self.ser.readline();
             line = line.decode("utf-8")
@@ -49,16 +59,8 @@ class Scaner:
         
         except:
             pass
-        
-        if(self.x > 180):
-            self.d = -1
-            self.aaa.clear()
-        
-        if(self.x < 0):
-            self.d = 1
-            self.aaa.clear()
+                
             
-        self.x += self.d
         
     def render(self):
         self.window.fill((0, 0, 0))
@@ -85,5 +87,5 @@ class Scaner:
                 self.quit()
 
 
-scaner = Scaner('COM5')
+scaner = Scaner('/dev/ttyUSB1')
 scaner.start()
