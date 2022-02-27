@@ -2,10 +2,14 @@ import pygame
 import json
 import serial
 
+pygame.font.init()
+
 class Scaner:
     def __init__(self, com):
-        self.window = pygame.display.set_mode((1080, 720))
-
+        self.window = pygame.surface.Surface((1080, 720))
+        self.screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+        self.width, self.height = self.screen.get_size()
+        
         self.run = True
 
         self.clock = pygame.time.Clock()
@@ -19,6 +23,7 @@ class Scaner:
         self.ser.timeout = 1    
         self.x = 0
         self.d = 1
+        self.display_dist = ""
         
     def start(self):
         self.setup()
@@ -34,6 +39,11 @@ class Scaner:
         self.run = False
         pygame.quit()
 
+    def display_text(self, text):
+        myfont = pygame.font.SysFont('Comic Sans MS', 30)
+        textsurface = myfont.render(str(text), False, (255, 0, 0))
+        return textsurface
+        
     def update(self):
         text = 'GO\n'
         self.ser.write(text.encode())
@@ -44,16 +54,15 @@ class Scaner:
         if(self.x <= 0):
             self.d = 1
             self.polygon.clear()
-            print("Clear1")
         if(self.x >= 180):
             self.d = -1
             self.polygon.clear()
-            print("Clear2")	
+
         try:
             line = self.ser.readline();
             line = line.decode("utf-8")
+            self.display_dist = str(line)[:-2]
             coficent = (1080 / 180)
-            print(str(line) + "/" + str(self.x))
             self.polygon.append([self.x * coficent, int(line)])     
             self.aaa[0].append(self.polygon)
         
@@ -73,12 +82,26 @@ class Scaner:
                     pos2 = [point[0], (point[1]) + 30]
                     pos3 = [last_point[0], 690 - (last_point[1])]
                     pos4 = [point[0], 690 - (point[1])]
-                    pygame.draw.line(self.window, (0, 255, 0), pos1, pos2)
-                    pygame.draw.line(self.window, (0, 255, 0), pos3, pos4)
+                    
                     pygame.draw.line(self.window, (0, 255, 0), pos2, pos4)
                     pygame.draw.line(self.window, (0, 255, 0), pos1, pos3)
 
-                    last_point = point        
+                    v2 = (pos4[1] - pos2[1]) / 10
+                    v1 = (pos3[1] - pos1[1]) / 10
+                    
+                    for i in range(10):
+                        p1 = [pos1[0], pos1[1] + (v1 * i)]
+                        p2 = [pos2[0], pos2[1] + (v2 * i)]
+                        p3 = [pos3[0], pos3[1] - (v1 * i)]
+                        p4 = [pos4[0], pos4[1] - (v2 * i)]
+                        pygame.draw.line(self.window, (0, 255, 0), p1, p2)
+                        pygame.draw.line(self.window, (0, 255, 0), p3, p4)
+
+                    last_point = point 
+                    
+        self.window.blit(self.display_text(str(self.display_dist) + "/" + str(self.x)), (50, 50))
+        self.screen.blit(pygame.transform.scale(self.window, (self.width, self.height)), (0, 0))       
+        
         pygame.display.flip()
 
     def eventManager(self):
@@ -87,5 +110,5 @@ class Scaner:
                 self.quit()
 
 
-scaner = Scaner('/dev/ttyUSB1')
+scaner = Scaner('COM5')
 scaner.start()
