@@ -6,7 +6,6 @@ int servoPin = 4;
 #define trigPin 3
 
 String inBytes;
-bool run = false;
 Servo Servo1; 
 
 int distanceCalc(){
@@ -32,21 +31,17 @@ void loop(){
   if(Serial.available() > 0){ 
     inBytes = Serial.readStringUntil('\n');
     if(inBytes == "GO"){
-      run = true;
+      for(int i = 0; i <= 180; i++){
+        Servo1.write(i);
+        Serial.println(distanceCalc());
+        delay(500);
+      }
+  
+      for(int i = 180; i >= 0; i--){
+        Servo1.write(i); 
+        Serial.println(distanceCalc());
+        delay(500);
+      }
     }  
   }
-  if(run){
-    for(int i = 0; i <= 180; i++){
-      Servo1.write(i);
-      Serial.println(distanceCalc());
-      delay(500);
-    }
-
-    for(int i = 180; i >= 0; i--){
-      Servo1.write(i); 
-      Serial.println(distanceCalc());
-      delay(500);
-    }
-  }
-
 }
